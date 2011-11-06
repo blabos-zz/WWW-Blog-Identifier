@@ -102,7 +102,7 @@ sub identify {
 				$engine = 'wordpress';
 			}else{
 				$html ||= get $url;
-				$engine = 'wordpress' if $html =~ m|<meta name="generator" content="WordPress|io;
+				$engine = 'wordpress' if $html =~ m|content=['"]WordPress|io;
 			}
 		}
     }
@@ -117,6 +117,28 @@ sub identify {
     return $engine if length $engine > 0;
 
 }
+
+=head1 NAME
+
+WWW::Correios::CEP - Perl extension for extract address from CEP (zip code) number
+
+=head1 SYNOPSIS
+
+	use WWW::Blog::Identifier;
+
+	my $idt = WWW::Blog::Identifier->new;
+
+	say $idt->identify('http://reuliuilbride.wordpress.com/');
+		# wordpress because .wordpress.
+
+	say $idt->identify('http://googlebrasilblog.blogspot.com/');
+		# blogspot because of .blogspot.com (inherited from WWW::Blog::Identify)
+
+
+=head1 DESCRIPTON
+
+	a more simples L<WWW::Blog::Identify> within supports to features like Poste
+	or /readme.html page of wordpress
 
 =head1 AUTHOR
 

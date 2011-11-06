@@ -41,6 +41,8 @@ if you don't export anything, such as for a purely object-oriented module.
 
 =head2 new
 
+Constructor
+
 =cut
 
 sub new {
@@ -50,6 +52,13 @@ sub new {
     
     return bless $atts, $class;
 }
+
+
+=head2 identify
+
+Identify
+
+=cut
 
 sub identify {
     my $self    = shift;
@@ -77,13 +86,6 @@ sub identify {
     return $engine if length $engine > 0;
     
     # For Wordpress
-}
-
-=head2 function2
-
-=cut
-
-sub function2 {
 }
 
 =head1 AUTHOR

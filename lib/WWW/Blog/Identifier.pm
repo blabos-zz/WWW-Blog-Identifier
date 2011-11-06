@@ -8,6 +8,8 @@ use LWP::Simple;
 use JSON;
 use Try::Tiny;
 
+use WWW::Blog::Identify;
+
 =head1 NAME
 
 WWW::Blog::Identifier - The great new WWW::Blog::Identifier!
@@ -59,33 +61,61 @@ sub new {
 Identify
 
 =cut
-
 sub identify {
     my $self    = shift;
     my $url     = shift;
     
     my $engine = '';
-    
-    # For Poste
-    try {
-        my $uri     = URI->new( $url );
+
+	my $get_basename = sub {
+        my $uri     = URI->new( shift );
         my $scheme  = $uri->scheme;
         my $host    = $uri->host;
         my $port    = $uri->port;
         $port = $port > 0 ? ":$port" : '';
-        
-        my $info = decode_json get "http://$host$port/about.json";
+		return ("$scheme://$host$port", $host);
+	};
+
+	my $flavor = WWW::Blog::Identify::identify $url, '';
+	return $flavor if ($flavor && $flavor !~ /suspected/);
+		
+    # For Poste
+    try {
+		my $info = decode_json get $get_basename->($url) . '/about.json';
         
         $engine = $info->{name};
     }
     catch {
-        warn $_;
-        $engine = '';
     };
-    
-    return $engine if length $engine > 0;
-    
+
+	my $html;
+
     # For Wordpress
+	try {
+		my ($site, $host) = $get_basename->($url);
+		if ($host =~ /\.wordpress\./ ) {
+			$engine = 'wordpress';
+		}else{
+			my $html_wp = get "$site/readme.html";
+
+			if ($html_wp && $html_wp =~ m|<title>WordPress|io){
+				$engine = 'wordpress';
+			}else{
+				$html ||= get $url;
+				$engine = 'wordpress' if $html =~ m|<meta name="generator" content="WordPress|io;
+			}
+		}
+    }
+    catch {
+    };
+
+	$html ||= get $url;
+	$flavor = WWW::Blog::Identify::identify '', $html;
+	return $flavor if ($flavor && $flavor !~ /suspected/);
+
+
+    return $engine if length $engine > 0;
+
 }
 
 =head1 AUTHOR
